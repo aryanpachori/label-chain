@@ -32,32 +32,29 @@ router.post("/task", middleware_1.authMiddleware, (req, res) => __awaiter(void 0
     const userId = req.userId;
     const body = req.body;
     const parsedData = types_1.taskInput.safeParse(body);
-    if (!parsedData) {
+    if (!parsedData.success) {
         return res.status(411).json({ message: "You've entered wrong inputs" });
     }
-    //@ts-ignore
-    let responce = prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a, _b, _c;
+    let response = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b;
         const response = yield tx.task.create({
             data: {
-                title: (_b = (_a = parsedData.data) === null || _a === void 0 ? void 0 : _a.title) !== null && _b !== void 0 ? _b : DEFAULT_TITLE,
+                title: (_a = parsedData.data.title) !== null && _a !== void 0 ? _a : DEFAULT_TITLE,
                 amount: "1",
-                //@ts-ignore
                 signature: parsedData.data.signature,
                 user_id: userId,
             },
         });
         yield tx.option.createMany({
-            //@ts-ignore
-            data: (_c = parsedData.data) === null || _c === void 0 ? void 0 : _c.options.map((x) => ({
+            data: (_b = parsedData.data) === null || _b === void 0 ? void 0 : _b.options.map((x) => ({
                 image_url: x.imageUrl,
                 task_id: response.id,
             })),
         });
-        return responce;
+        return response;
     }));
     res.json({
-        id: responce.id,
+        id: response.id,
     });
 }));
 router.get("/presignedUrl", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -69,6 +66,9 @@ router.get("/presignedUrl", middleware_1.authMiddleware, (req, res) => __awaiter
         Conditions: [
             ["content-length-range", 0, 5 * 1024 * 1024], // 5 MB max
         ],
+        Fields: {
+            "Content-Type": "image/png",
+        },
         Expires: 3600,
     });
     res.json({

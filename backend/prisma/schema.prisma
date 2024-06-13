@@ -21,10 +21,10 @@ model User{
 model Task{
   id Int @id @default(autoincrement())
   title String? @default("Select the most clickable thumbnail")
+   options Option[]
   user_id Int
   signature String
   amount String
-  options Option[]
   user User @relation(fields: [user_id], references: [id])
   submission Submission[]
 }

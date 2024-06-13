@@ -23,32 +23,30 @@ router.post("/task", authMiddleware, async (req, res) => {
   const userId = req.userId;
   const body = req.body;
   const parsedData = taskInput.safeParse(body);
-  if (!parsedData) {
+  if (!parsedData.success) {
     return res.status(411).json({ message: "You've entered wrong inputs" });
   }
-  //@ts-ignore
-  let responce = prisma.$transaction(async (tx) => {
+
+  let response = await prisma.$transaction(async (tx) => {
     const response = await tx.task.create({
       data: {
-        title: parsedData.data?.title ?? DEFAULT_TITLE,
+        title: parsedData.data.title ?? DEFAULT_TITLE,
         amount: "1",
-        //@ts-ignore
         signature: parsedData.data.signature,
         user_id: userId,
       },
     });
 
     await tx.option.createMany({
-      //@ts-ignore
       data: parsedData.data?.options.map((x) => ({
         image_url: x.imageUrl,
         task_id: response.id,
       })),
     });
-    return responce;
+    return response;
   });
   res.json({
-    id: responce.id,
+    id: response.id,
   });
 });
 
@@ -62,6 +60,9 @@ router.get("/presignedUrl", authMiddleware, async (req, res) => {
     Conditions: [
       ["content-length-range", 0, 5 * 1024 * 1024], // 5 MB max
     ],
+    Fields: {
+      "Content-Type": "image/png",
+    },
     Expires: 3600,
   });
 

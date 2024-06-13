@@ -1,9 +1,9 @@
-import z, { optional } from "zod";
+import z from "zod";
 
 export const taskInput = z.object({
   options: z.array(
     z.object({
-      imageUrl: z.string(),
+      imageUrl: z.string()
     })
   ),
   title: z.string().optional(),
