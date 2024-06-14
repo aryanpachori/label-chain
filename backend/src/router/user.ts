@@ -50,6 +50,57 @@ router.post("/task", authMiddleware, async (req, res) => {
   });
 });
 
+router.get("/task", authMiddleware, async (req, res) => {
+  // @ts-ignore
+  const userId: String = req.userId;
+  // @ts-ignore
+  const taskId: String = req.query.taskId;
+
+  const taskDetails = await prisma.task.findFirst({
+    where: {
+      user_id: Number(userId),
+      id: Number(taskId),
+    },
+    include: {
+      options: true,
+    },
+  });
+  if (!taskDetails) {
+    res.send(411).json({ message: "Invalid details" });
+  }
+
+  const responses = await prisma.submission.findMany({
+    where: {
+      task_id: Number(taskId),
+    },
+    include: {
+      task: true,
+    },
+  });
+
+  const result: Record<
+    string,
+    {
+      count: number;
+      option: {
+        imageUrl: string;
+      };
+    }
+  > = {};
+  taskDetails?.options.forEach((option) => {
+    result[option.id] = {
+      count: 0,
+      option: {
+        imageUrl: option.image_url,
+      },
+    };
+  });
+  responses.forEach((r) => {
+    result[r.option_id].count++;
+  });
+  return res.json({ result });
+});
+
 router.get("/presignedUrl", authMiddleware, async (req, res) => {
   // @ts-ignore
   const userId = req.userId;
