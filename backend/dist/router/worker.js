@@ -67,7 +67,7 @@ router.post("/submission", middleware_1.authMiddlewareWorkers, (req, res) => __a
         if (!task || (task === null || task === void 0 ? void 0 : task.id) !== Number(parsedData.data.taskId)) {
             return res.status(411).json({ message: "Invalid task id" });
         }
-        const amount = (Number(task.amount) / TOTAL_SUBMISSIONS);
+        const amount = (Number(task.amount) / TOTAL_SUBMISSIONS).toString();
         const submission = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
             var _a, _b;
             const submisson = yield tx.submission.create({
@@ -75,7 +75,7 @@ router.post("/submission", middleware_1.authMiddlewareWorkers, (req, res) => __a
                     option_id: Number((_a = parsedData.data) === null || _a === void 0 ? void 0 : _a.OptionId),
                     worker_id: workerId,
                     task_id: Number((_b = parsedData.data) === null || _b === void 0 ? void 0 : _b.taskId),
-                    amount
+                    amount: Number(amount),
                 },
             });
             yield tx.workers.update({
@@ -96,18 +96,64 @@ router.post("/submission", middleware_1.authMiddlewareWorkers, (req, res) => __a
             amount,
         });
     }
+    else {
+        res.status(411).json({
+            message: "Incorrect inputs",
+        });
+    }
 }));
 router.get("/balances", middleware_1.authMiddlewareWorkers, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // @ts-ignore
     const workerId = req.workerId;
     const worker = yield prisma.workers.findFirst({
         where: {
-            id: Number(workerId)
-        }
+            id: Number(workerId),
+        },
     });
     res.json({
         pendingAmount: worker === null || worker === void 0 ? void 0 : worker.pending_amount,
-        lockedAmount: worker === null || worker === void 0 ? void 0 : worker.locked_amount
+        lockedAmount: worker === null || worker === void 0 ? void 0 : worker.locked_amount,
+    });
+}));
+router.post("/payouts", middleware_1.authMiddlewareWorkers, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    //@ts-ignore
+    const workerId = req.workerId;
+    const worker = yield prisma.workers.findFirst({
+        where: {
+            id: Number(workerId),
+        },
+    });
+    if (!worker) {
+        return res.status(411).json({ message: "worker not found" });
+    }
+    const address = worker.address;
+    const txnId = "dowuhgdcuikgckhjcjh";
+    yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
+        yield tx.workers.update({
+            where: {
+                id: Number(workerId),
+            },
+            data: {
+                pending_amount: {
+                    decrement: worker.pending_amount,
+                },
+                locked_amount: {
+                    increment: worker.pending_amount,
+                },
+            },
+        });
+        yield tx.payouts.create({
+            data: {
+                user_id: Number(workerId),
+                amount: worker.pending_amount,
+                status: "Processing",
+                signature: txnId
+            }
+        });
+    }));
+    return res.json({
+        message: "processing amount",
+        amount: worker.locked_amount
     });
 }));
 exports.default = router;
