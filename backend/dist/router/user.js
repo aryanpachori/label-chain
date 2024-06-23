@@ -85,7 +85,7 @@ router.get("/task", middleware_1.authMiddleware, (req, res) => __awaiter(void 0,
             task_id: Number(taskId),
         },
         include: {
-            task: true,
+            option: true,
         },
     });
     const result = {};
@@ -100,7 +100,7 @@ router.get("/task", middleware_1.authMiddleware, (req, res) => __awaiter(void 0,
     responses.forEach((r) => {
         result[r.option_id].count++;
     });
-    return res.json({ result });
+    return res.json({ result, taskDetails });
 }));
 router.get("/presignedUrl", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // @ts-ignore

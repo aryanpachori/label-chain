@@ -79,7 +79,7 @@ router.get("/task", authMiddleware, async (req, res) => {
       task_id: Number(taskId),
     },
     include: {
-      task: true,
+      option: true,
     },
   });
 
@@ -103,7 +103,7 @@ router.get("/task", authMiddleware, async (req, res) => {
   responses.forEach((r) => {
     result[r.option_id].count++;
   });
-  return res.json({ result });
+  return res.json({ result,taskDetails });
 });
 
 router.get("/presignedUrl", authMiddleware, async (req, res) => {

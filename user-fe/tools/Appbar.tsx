@@ -6,9 +6,9 @@ export default function Appbar() {
     <div>
       <header className="flex items-center justify-between px-4 py-3 bg-gray-800 text-gray-50 shadow-md">
         <div className="flex items-center gap-2">
-          <Image
-            src="/l.png"
-            alt="LabelChain Logo  bg-[#8BC34A] "
+        <Image
+            src="/logo.jpeg"
+            alt="LabelChain Logo"
             width={24}
             height={24}
             className="h-6 w-6"
