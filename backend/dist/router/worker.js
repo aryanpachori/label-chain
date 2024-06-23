@@ -153,7 +153,7 @@ router.post("/payouts", middleware_1.authMiddlewareWorkers, (req, res) => __awai
     }));
     return res.json({
         message: "processing amount",
-        amount: worker.locked_amount
+        amount: worker.pending_amount
     });
 }));
 exports.default = router;

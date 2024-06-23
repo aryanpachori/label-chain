@@ -1,5 +1,6 @@
-import  Appbar  from "./components/Appbar";
-import UploadImage from "./components/UploadImage";
+import Appbar from "@/tools/Appbar";
+import UploadImage from "@/tools/UploadImage";
+
 
 
 

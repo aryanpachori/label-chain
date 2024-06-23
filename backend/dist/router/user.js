@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
@@ -22,8 +23,8 @@ const DEFAULT_TITLE = "Choose the most appropriate thumbnail";
 const prisma = new client_1.PrismaClient();
 const s3client = new client_s3_1.S3Client({
     credentials: {
-        accessKeyId: "",
-        secretAccessKey: "",
+        accessKeyId: (_a = process.env.AWS_ACCESS_KEY_ID) !== null && _a !== void 0 ? _a : "",
+        secretAccessKey: (_b = process.env.AWS_SECRET_ACCESS_KEY) !== null && _b !== void 0 ? _b : "",
     },
     region: "ap-south-1",
 });
@@ -32,21 +33,26 @@ router.post("/task", middleware_1.authMiddleware, (req, res) => __awaiter(void 0
     const userId = req.userId;
     const body = req.body;
     const parsedData = types_1.taskInput.safeParse(body);
+    const user = yield prisma.user.findFirst({
+        where: {
+            id: userId,
+        },
+    });
     if (!parsedData.success) {
         return res.status(411).json({ message: "You've entered wrong inputs" });
     }
     let response = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-        var _a, _b;
+        var _c, _d;
         const response = yield tx.task.create({
             data: {
-                title: (_a = parsedData.data.title) !== null && _a !== void 0 ? _a : DEFAULT_TITLE,
-                amount: 1 * config_1.DECIMALS,
+                title: (_c = parsedData.data.title) !== null && _c !== void 0 ? _c : DEFAULT_TITLE,
+                amount: 0.1 * config_1.DECIMALS,
                 signature: parsedData.data.signature,
                 user_id: userId,
             },
         });
         yield tx.option.createMany({
-            data: (_b = parsedData.data) === null || _b === void 0 ? void 0 : _b.options.map((x) => ({
+            data: (_d = parsedData.data) === null || _d === void 0 ? void 0 : _d.options.map((x) => ({
                 image_url: x.imageUrl,
                 task_id: response.id,
             })),
@@ -105,9 +111,6 @@ router.get("/presignedUrl", middleware_1.authMiddleware, (req, res) => __awaiter
         Conditions: [
             ["content-length-range", 0, 5 * 1024 * 1024], // 5 MB max
         ],
-        Fields: {
-            "Content-Type": "image/png",
-        },
         Expires: 3600,
     });
     res.json({

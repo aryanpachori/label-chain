@@ -12,8 +12,8 @@ const DEFAULT_TITLE = "Choose the most appropriate thumbnail";
 const prisma = new PrismaClient();
 const s3client = new S3Client({
   credentials: {
-    accessKeyId: "",
-    secretAccessKey: "",
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID ?? "",
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ?? "",
   },
   region: "ap-south-1",
 });
@@ -23,6 +23,11 @@ router.post("/task", authMiddleware, async (req, res) => {
   const userId = req.userId;
   const body = req.body;
   const parsedData = taskInput.safeParse(body);
+  const user = await prisma.user.findFirst({
+    where: {
+      id: userId,
+    },
+  });
   if (!parsedData.success) {
     return res.status(411).json({ message: "You've entered wrong inputs" });
   }
@@ -31,7 +36,7 @@ router.post("/task", authMiddleware, async (req, res) => {
     const response = await tx.task.create({
       data: {
         title: parsedData.data.title ?? DEFAULT_TITLE,
-        amount: 1 * DECIMALS,
+        amount: 0.1 * DECIMALS,
         signature: parsedData.data.signature,
         user_id: userId,
       },
@@ -111,9 +116,7 @@ router.get("/presignedUrl", authMiddleware, async (req, res) => {
     Conditions: [
       ["content-length-range", 0, 5 * 1024 * 1024], // 5 MB max
     ],
-    Fields: {
-      "Content-Type": "image/png",
-    },
+
     Expires: 3600,
   });
 

@@ -5,9 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const app = (0, express_1.default)();
+const cors_1 = __importDefault(require("cors"));
 const user_1 = __importDefault(require("./router/user"));
 const worker_1 = __importDefault(require("./router/worker"));
 app.use(express_1.default.json());
+app.use((0, cors_1.default)());
 app.use("/v1/user", user_1.default);
 app.use("/v1/workers", worker_1.default);
 app.listen(3000);
