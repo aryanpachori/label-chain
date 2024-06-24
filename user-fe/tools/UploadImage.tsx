@@ -48,16 +48,16 @@ export default function UploadImage() {
   }
 
   return (
-    <div className="bg-gray-900">
+    <div className="bg-gray-900 min-h-screen ">
       <div className="max-w-2xl mx-auto px-4 py-8 sm:px-6 lg:px-8 font-sans pt-0">
         <form className="space-y-6" onSubmit={onSubmit}>
           <div>
-            <div className="text-lg font-medium font-mono text-green-300 mb-2">
+            <div className="text-lg font-medium font-mono text-green-300 mb-2 pb-5">
               Create a task:
             </div>
             <Label
               htmlFor="title"
-              className="block text-sm font-medium text-gray-400 dark:text-gray-400"
+              className="block text-sm font-medium text-gray-400 dark:text-gray-400 pb-1"
             >
               Title
             </Label>
@@ -97,10 +97,10 @@ export default function UploadImage() {
               />
             </div>
           </div>
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center ">
             <Button
               type="submit"
-              className="bg-green-700 hover:bg-[#80d080] focus:ring-[#90ee90] dark:bg-[#90ee90] dark:hover:bg-[#80d080] dark:focus:ring-[#90ee90] text-black font-mono font-semibold"
+              className="bg-green-700 hover:bg-[#80d080] focus:ring-[#90ee90] dark:bg-[#90ee90] dark:hover:bg-[#80d080] dark:focus:ring-[#90ee90] text-black font-mono font-semibold ml-2 "
             >
               Submit
             </Button>
