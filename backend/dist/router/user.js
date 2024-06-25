@@ -109,7 +109,8 @@ router.get("/presignedUrl", middleware_1.authMiddleware, (req, res) => __awaiter
         Bucket: "decentralized-datalabelling",
         Key: `decentralized-ctr/${userId}/${Math.random()}/image.jpg`,
         Conditions: [
-            ["content-length-range", 0, 5 * 1024 * 1024], // 5 MB max
+            ["content-length-range", 0, 5 * 1024 * 1024],
+            ["starts-with", "$Content-Type", "image/jpeg"] // 5 MB max
         ],
         Expires: 3600,
     });

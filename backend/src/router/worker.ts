@@ -62,8 +62,18 @@ router.post("/submission", authMiddlewareWorkers, async (req, res) => {
     }
     const amount = (Number(task.amount) / TOTAL_SUBMISSIONS).toString();
     const submission = await prisma.$transaction(async (tx) => {
-      const submisson = await tx.submission.create({
-        data: {
+      const submission = await tx.submission.upsert({
+        where: {
+          worker_id_task_id: {
+            worker_id: workerId,
+            task_id: Number(parsedData.data.taskId),
+          },
+        },
+        update: {
+          option_id: Number(parsedData.data?.OptionId),
+          amount: Number(amount),
+        },
+        create: {
           option_id: Number(parsedData.data?.OptionId),
           worker_id: workerId,
           task_id: Number(parsedData.data?.taskId),
@@ -80,7 +90,7 @@ router.post("/submission", authMiddlewareWorkers, async (req, res) => {
           },
         },
       });
-      return submisson;
+      return submission;
     });
 
     const nextTask = await nexttask(Number(workerId));

@@ -3,7 +3,7 @@ import z from "zod";
 export const taskInput = z.object({
   options: z.array(
     z.object({
-      imageUrl: z.string(),
+      imageUrl: z.string().min(2),
     })
   ),
   title: z.string().optional(),

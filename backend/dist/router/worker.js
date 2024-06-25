@@ -69,12 +69,22 @@ router.post("/submission", middleware_1.authMiddlewareWorkers, (req, res) => __a
         }
         const amount = (Number(task.amount) / TOTAL_SUBMISSIONS).toString();
         const submission = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-            var _a, _b;
-            const submisson = yield tx.submission.create({
-                data: {
+            var _a, _b, _c;
+            const submission = yield tx.submission.upsert({
+                where: {
+                    worker_id_task_id: {
+                        worker_id: workerId,
+                        task_id: Number(parsedData.data.taskId),
+                    },
+                },
+                update: {
                     option_id: Number((_a = parsedData.data) === null || _a === void 0 ? void 0 : _a.OptionId),
+                    amount: Number(amount),
+                },
+                create: {
+                    option_id: Number((_b = parsedData.data) === null || _b === void 0 ? void 0 : _b.OptionId),
                     worker_id: workerId,
-                    task_id: Number((_b = parsedData.data) === null || _b === void 0 ? void 0 : _b.taskId),
+                    task_id: Number((_c = parsedData.data) === null || _c === void 0 ? void 0 : _c.taskId),
                     amount: Number(amount),
                 },
             });
@@ -88,7 +98,7 @@ router.post("/submission", middleware_1.authMiddlewareWorkers, (req, res) => __a
                     },
                 },
             });
-            return submisson;
+            return submission;
         }));
         const nextTask = yield (0, db_1.nexttask)(Number(workerId));
         return res.json({

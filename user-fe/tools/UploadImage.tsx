@@ -100,7 +100,7 @@ export default function UploadImage() {
           <div className="flex justify-center items-center ">
             <Button
               type="submit"
-              className="bg-green-700 hover:bg-[#80d080] focus:ring-[#90ee90] dark:bg-[#90ee90] dark:hover:bg-[#80d080] dark:focus:ring-[#90ee90] text-black font-mono font-semibold ml-2 "
+              className="bg-green-700 hover:bg-[#80d080] focus:ring-[#90ee90] dark:bg-[#90ee90] dark:hover:bg-[#80d080] dark:focus:ring-[#90ee90] text-black font-mono font-semibold ml-3 "
             >
               Submit
             </Button>

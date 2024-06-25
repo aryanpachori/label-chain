@@ -1,6 +1,7 @@
 "use client"
 import { BACKEND_URL, CLOUDFRONT_URL } from "@/utils";
 import axios from "axios";
+import { Loader2 } from "lucide-react";
 import { useState } from "react"
 
 export function Upload({ onImageAdded, image }: {
@@ -29,6 +30,7 @@ export function Upload({ onImageAdded, image }: {
             formData.set("Policy", response.data.fields["Policy"]);
             formData.set("X-Amz-Signature", response.data.fields["X-Amz-Signature"]);
             formData.set("X-Amz-Algorithm", response.data.fields["X-Amz-Algorithm"]);
+            formData.append('Content-Type', 'image/jpeg');
             formData.append("file", file);
             const awsResponse = await axios.post(presignedUrl, formData);
 
@@ -47,9 +49,9 @@ export function Upload({ onImageAdded, image }: {
     return <div>
         <div className="w-40 h-40 rounded border text-2xl cursor-pointer">
                 <div className="h-full flex justify-center flex-col relative w-full">
-                    <div className="h-full flex justify-center w-full pt-16 text-4xl">
-                    {uploading ? <div className="text-sm">Loading...</div> : <>
-                        +
+                    <div className="h-full flex justify-center w-full pt-16 text-4xl mr-2 mb-8 text-green-900">
+                    {uploading ? <div className="text-sm">Loading..</div> : <>
+                           +
                         <input className="w-full h-full bg-red-400 w-40 h-40" type="file" style={{position: "absolute", opacity: 0, top: 0, left: 0, bottom: 0, right: 0, width: "100%", height: "100%"}} onChange={onFileSelect} />
                     </>}
                 </div>
