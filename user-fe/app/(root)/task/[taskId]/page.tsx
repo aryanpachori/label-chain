@@ -61,6 +61,12 @@ export default function Page({
       setResult(data.result);
       setTaskDetails(data.taskDetails);
     });
+    setInterval(() => {
+      getTaskDetails(taskId).then((data) => {
+        setResult(data.result);
+        setTaskDetails(data.taskDetails);
+      });
+    }, 5000);
   }, [taskId]);
 
   const taskIds = Object.keys(result);
@@ -109,7 +115,7 @@ export default function Page({
   return (
     <div className="bg-gray-900 min-h-screen pb-20">
       <Appbar />
-      <div className ="text-4xl text-center pt-5 pb-5 flex justify-center text-green-300 font-semi-bold text-pretty font-mono">
+      <div className="text-4xl text-center pt-5 pb-5 flex justify-center text-green-300 font-semi-bold text-pretty font-mono">
         {taskDetails.title}
       </div>
       <div className="flex justify-center pt-8 text-green-300">

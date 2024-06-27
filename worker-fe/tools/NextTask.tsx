@@ -92,11 +92,11 @@ export default function NextTask() {
 
   return (
     <div className="bg-gray-900 min-h-screen">
-      <div className="text-4xl text-center pt-20 flex justify-center text-green-300 font-semi-bold text-pretty font-mono">
-        {currentTask?.title}
+      <div className="text-5xl text-center pt-10 mb-10  flex justify-center text-green-300 font-semi-bold text-pretty font-mono">
+        {currentTask?.title} 
       </div>
       <div className="flex justify-center text-red-300 mt-5 ">
-           Select the most appropriate option : 
+           Select the most appropriate option :
            </div>
       <div className="flex justify-center pt-8">
         {currentTask?.options.map((option) => (
@@ -105,6 +105,7 @@ export default function NextTask() {
             imageUrl={option.image_url}
             onSelect={() => handleOptionSelect(currentTask.id.toString(), option.id.toString())}
           />
+          
         ))}
       </div>
     </div>

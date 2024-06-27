@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
@@ -17,6 +20,8 @@ const middleware_1 = require("./middleware");
 const client_s3_1 = require("@aws-sdk/client-s3");
 const s3_presigned_post_1 = require("@aws-sdk/s3-presigned-post");
 const types_1 = require("../types");
+const web3_js_1 = require("@solana/web3.js");
+const tweetnacl_1 = __importDefault(require("tweetnacl"));
 const router = (0, express_1.Router)();
 const jwt = require("jsonwebtoken");
 const DEFAULT_TITLE = "Choose the most appropriate thumbnail";
@@ -110,7 +115,7 @@ router.get("/presignedUrl", middleware_1.authMiddleware, (req, res) => __awaiter
         Key: `decentralized-ctr/${userId}/${Math.random()}/image.jpg`,
         Conditions: [
             ["content-length-range", 0, 5 * 1024 * 1024],
-            ["starts-with", "$Content-Type", "image/jpeg"] // 5 MB max
+            ["starts-with", "$Content-Type", "image/jpeg"], // 5 MB max
         ],
         Expires: 3600,
     });
@@ -120,24 +125,39 @@ router.get("/presignedUrl", middleware_1.authMiddleware, (req, res) => __awaiter
     });
 }));
 router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const walletaddressHardcoded = "0x8351B4feA34DB4A65B48f5a9bFFB26F8734a7bB3";
+    const { publicKey, signature } = req.body;
+    if (!publicKey || !signature) {
+        return res
+            .status(400)
+            .json({ message: "Public key and signature are required" });
+    }
+    const signatureArray = Array.isArray(signature.data)
+        ? Uint8Array.from(signature.data)
+        : null;
+    if (!signatureArray) {
+        return res.status(400).json({ message: "Invalid signature format" });
+    }
+    const publicKeyBytes = new web3_js_1.PublicKey(publicKey).toBytes();
+    const message = new TextEncoder().encode("Sign in to LabelChain");
+    const result = tweetnacl_1.default.sign.detached.verify(message, signatureArray, publicKeyBytes);
+    if (!result) {
+        return res.status(411).json({ message: "Incorrect signature" });
+    }
     const existingUser = yield prisma.user.findFirst({
-        where: {
-            address: walletaddressHardcoded,
-        },
+        where: { address: publicKey },
     });
     if (existingUser) {
         const token = jwt.sign({
             userId: existingUser.id,
         }, config_1.JWT_SECRET);
-        return res.json({
+        res.json({
             token,
         });
     }
     else {
         const user = yield prisma.user.create({
             data: {
-                address: walletaddressHardcoded,
+                address: publicKey,
             },
         });
         const token = jwt.sign({

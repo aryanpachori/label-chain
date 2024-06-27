@@ -14,11 +14,13 @@
     "@aws-sdk/s3-presigned-post": "^3.588.0",
     "@aws-sdk/s3-request-presigner": "^3.588.0",
     "@prisma/client": "^5.15.0",
+    "@solana/web3.js": "^1.93.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "prisma": "^5.14.0",
+    "tweetnacl": "^1.0.3",
     "zod": "^3.23.8"
   },
   "description": "",

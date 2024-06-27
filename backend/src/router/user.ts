@@ -5,7 +5,8 @@ import { authMiddleware } from "./middleware";
 import { S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { taskInput } from "../types";
-
+import { PublicKey } from "@solana/web3.js";
+import nacl from "tweetnacl";
 const router = Router();
 const jwt = require("jsonwebtoken");
 const DEFAULT_TITLE = "Choose the most appropriate thumbnail";
@@ -103,7 +104,7 @@ router.get("/task", authMiddleware, async (req, res) => {
   responses.forEach((r) => {
     result[r.option_id].count++;
   });
-  return res.json({ result,taskDetails });
+  return res.json({ result, taskDetails });
 });
 
 router.get("/presignedUrl", authMiddleware, async (req, res) => {
@@ -115,7 +116,7 @@ router.get("/presignedUrl", authMiddleware, async (req, res) => {
     Key: `decentralized-ctr/${userId}/${Math.random()}/image.jpg`,
     Conditions: [
       ["content-length-range", 0, 5 * 1024 * 1024],
-      ["starts-with", "$Content-Type", "image/jpeg"] // 5 MB max
+      ["starts-with", "$Content-Type", "image/jpeg"], // 5 MB max
     ],
 
     Expires: 3600,
@@ -128,11 +129,37 @@ router.get("/presignedUrl", authMiddleware, async (req, res) => {
 });
 
 router.post("/signin", async (req, res) => {
-  const walletaddressHardcoded = "0x8351B4feA34DB4A65B48f5a9bFFB26F8734a7bB3";
+  const { publicKey, signature } = req.body;
+
+  if (!publicKey || !signature) {
+    return res
+      .status(400)
+      .json({ message: "Public key and signature are required" });
+  }
+
+  const signatureArray = Array.isArray(signature.data)
+    ? Uint8Array.from(signature.data)
+    : null;
+
+  if (!signatureArray) {
+    return res.status(400).json({ message: "Invalid signature format" });
+  }
+
+  const publicKeyBytes = new PublicKey(publicKey).toBytes();
+
+  const message = new TextEncoder().encode("Sign in to LabelChain");
+  const result = nacl.sign.detached.verify(
+    message,
+    signatureArray,
+    publicKeyBytes
+  );
+
+  if (!result) {
+    return res.status(411).json({ message: "Incorrect signature" });
+  }
+
   const existingUser = await prisma.user.findFirst({
-    where: {
-      address: walletaddressHardcoded,
-    },
+    where: { address: publicKey },
   });
 
   if (existingUser) {
@@ -142,13 +169,13 @@ router.post("/signin", async (req, res) => {
       },
       JWT_SECRET
     );
-    return res.json({
+    res.json({
       token,
     });
   } else {
     const user = await prisma.user.create({
       data: {
-        address: walletaddressHardcoded,
+        address: publicKey,
       },
     });
     const token = jwt.sign({
