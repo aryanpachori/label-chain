@@ -33,7 +33,10 @@ const s3client = new client_s3_1.S3Client({
     },
     region: "ap-south-1",
 });
+const PARENT_WALLET = "5kNRojkY4NeM96KfLEktRczmSDRZdiPm6UQBJCepiK45";
+const connection = new web3_js_1.Connection("https://solana-devnet.g.alchemy.com/v2/CFzatoOvzW6Cw31XUVFyyaowfvLLP4Au");
 router.post("/task", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c, _d;
     // @ts-ignore
     const userId = req.userId;
     const body = req.body;
@@ -46,18 +49,32 @@ router.post("/task", middleware_1.authMiddleware, (req, res) => __awaiter(void 0
     if (!parsedData.success) {
         return res.status(411).json({ message: "You've entered wrong inputs" });
     }
+    const transaction = yield connection.getTransaction(parsedData.data.signature, {
+        maxSupportedTransactionVersion: 1
+    });
+    console.log(transaction);
+    if (((_c = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(1)) === null || _c === void 0 ? void 0 : _c.toString()) !== PARENT_WALLET) {
+        return res.status(411).json({
+            message: "Transaction sent to wrong address"
+        });
+    }
+    if (((_d = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(0)) === null || _d === void 0 ? void 0 : _d.toString()) !== (user === null || user === void 0 ? void 0 : user.address)) {
+        return res.status(411).json({
+            message: "Transaction sent to wrong address"
+        });
+    }
     let response = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-        var _c, _d;
+        var _e, _f;
         const response = yield tx.task.create({
             data: {
-                title: (_c = parsedData.data.title) !== null && _c !== void 0 ? _c : DEFAULT_TITLE,
+                title: (_e = parsedData.data.title) !== null && _e !== void 0 ? _e : DEFAULT_TITLE,
                 amount: 0.1 * config_1.DECIMALS,
                 signature: parsedData.data.signature,
                 user_id: userId,
             },
         });
         yield tx.option.createMany({
-            data: (_d = parsedData.data) === null || _d === void 0 ? void 0 : _d.options.map((x) => ({
+            data: (_f = parsedData.data) === null || _f === void 0 ? void 0 : _f.options.map((x) => ({
                 image_url: x.imageUrl,
                 task_id: response.id,
             })),

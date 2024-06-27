@@ -5,7 +5,7 @@ import { authMiddleware } from "./middleware";
 import { S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { taskInput } from "../types";
-import { PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import nacl from "tweetnacl";
 const router = Router();
 const jwt = require("jsonwebtoken");
@@ -18,7 +18,10 @@ const s3client = new S3Client({
   },
   region: "ap-south-1",
 });
-
+const PARENT_WALLET = "5kNRojkY4NeM96KfLEktRczmSDRZdiPm6UQBJCepiK45";
+const connection = new Connection(
+  "https://solana-devnet.g.alchemy.com/v2/CFzatoOvzW6Cw31XUVFyyaowfvLLP4Au"
+);
 router.post("/task", authMiddleware, async (req, res) => {
   // @ts-ignore
   const userId = req.userId;
@@ -32,6 +35,25 @@ router.post("/task", authMiddleware, async (req, res) => {
   if (!parsedData.success) {
     return res.status(411).json({ message: "You've entered wrong inputs" });
   }
+  
+  const transaction = await connection.getTransaction(parsedData.data.signature, {
+    maxSupportedTransactionVersion: 1
+});
+console.log(transaction)
+
+ 
+  if (transaction?.transaction.message.getAccountKeys().get(1)?.toString() !== PARENT_WALLET) {
+    return res.status(411).json({
+        message: "Transaction sent to wrong address"
+    })
+}
+
+if (transaction?.transaction.message.getAccountKeys().get(0)?.toString() !== user?.address) {
+    return res.status(411).json({
+        message: "Transaction sent to wrong address"
+    })
+}
+
 
   let response = await prisma.$transaction(async (tx) => {
     const response = await tx.task.create({

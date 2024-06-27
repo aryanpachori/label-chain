@@ -8,11 +8,35 @@ import { Upload } from "./Upload";
 import { BACKEND_URL } from "@/utils";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 
 export default function UploadImage() {
   const [title, setTitle] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const router = useRouter();
+  const { publicKey, sendTransaction } = useWallet();
+  const [txSignature, setTxSignature] = useState("");
+  const {connection} = useConnection();
+
+  async function makePayment() {
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey : publicKey!,
+          toPubkey  :new PublicKey("5kNRojkY4NeM96KfLEktRczmSDRZdiPm6UQBJCepiK45"),
+          lamports : 100000000,
+        })
+      )
+      const {
+        context: { slot: minContextSlot },
+        value: { blockhash, lastValidBlockHeight }
+    } = await connection.getLatestBlockhashAndContext();
+
+    const signature = await sendTransaction(transaction, connection, { minContextSlot });
+
+    await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
+    setTxSignature(signature);
+  }
 
   async function onSubmit(event: any) {
     event.preventDefault();
@@ -25,7 +49,7 @@ export default function UploadImage() {
             imageUrl: image,
           })),
           title,
-          signature: "txSignature",
+          signature: txSignature,
         },
         {
           headers: {
@@ -48,9 +72,9 @@ export default function UploadImage() {
   }
 
   return (
-    <div className="bg-gray-900 min-h-screen ">
+    <div className="bg-gray-900 min-h-screen">
       <div className="max-w-2xl mx-auto px-4 py-8 sm:px-6 lg:px-8 font-sans pt-0">
-        <form className="space-y-6" onSubmit={onSubmit}>
+        <div className="space-y-6">
           <div>
             <div className="text-lg font-medium font-mono text-green-300 mb-2 pb-5">
               Create a task:
@@ -97,16 +121,17 @@ export default function UploadImage() {
               />
             </div>
           </div>
-          <div className="flex justify-center items-center ">
+          <div className="flex justify-center items-center">
             <Button
-              type="submit"
-              className="bg-green-700 hover:bg-[#80d080] focus:ring-[#90ee90] dark:bg-[#90ee90] dark:hover:bg-[#80d080] dark:focus:ring-[#90ee90] text-black font-mono font-semibold ml-3 "
+              onClick={txSignature ? onSubmit : makePayment}
+              className="bg-green-700 hover:bg-[#80d080] focus:ring-[#90ee90] dark:bg-[#90ee90] dark:hover:bg-[#80d080] dark:focus:ring-[#90ee90] text-black font-mono font-semibold ml-3"
             >
-              Submit
+              {txSignature ? "Submit" : "PAY 0.1 SOL"}
             </Button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
 }
+
