@@ -4,17 +4,41 @@ import { Router } from "express";
 import { authMiddlewareWorkers } from "./middleware";
 import { nexttask } from "../db";
 import { submissionInput } from "../types";
+import nacl from "tweetnacl";
+import { PublicKey } from "@solana/web3.js";
 const router = Router();
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const TOTAL_SUBMISSIONS = 100;
 
 router.post("/signin", async (req, res) => {
-  const walletaddressHardcoded =
-    "0x8351B4feA34DB4A65B48f5a9bFFB26F8734a7bB3hckjacbkj";
+  const { publicKey, signature } = req.body;
+  const message = new TextEncoder().encode("Sign into LabelChain as a worker");
+
+  
+  const signatureArray = new Uint8Array(signature);
+
+  if (signatureArray.length !== 64) {
+    return res.status(400).json({
+      message: "Signature must be 64 bytes long"
+    });
+  }
+
+  const result = nacl.sign.detached.verify(
+    message,
+    signatureArray,
+    new PublicKey(publicKey).toBytes()
+  );
+
+  if (!result) {
+    return res.status(411).json({
+      message: "Incorrect signature"
+    });
+  }
+
   const existingWorker = await prisma.workers.findFirst({
     where: {
-      address: walletaddressHardcoded,
+      address: publicKey,
     },
   });
   if (existingWorker) {
@@ -23,7 +47,7 @@ router.post("/signin", async (req, res) => {
   } else {
     const worker = await prisma.workers.create({
       data: {
-        address: walletaddressHardcoded,
+        address: publicKey,
         pending_amount: 0,
         locked_amount: 0,
       },
@@ -148,17 +172,17 @@ router.post("/payouts", authMiddlewareWorkers, async (req, res) => {
       },
     });
     await tx.payouts.create({
-      data:{
-        user_id : Number(workerId),
-        amount : worker.pending_amount,
-        status : "Processing",
-        signature: txnId
-      }
-    })
+      data: {
+        user_id: Number(workerId),
+        amount: worker.pending_amount,
+        status: "Processing",
+        signature: txnId,
+      },
+    });
   });
   return res.json({
-    message : "processing amount",
-    amount : worker.pending_amount
-  })
+    message: "processing amount",
+    amount: worker.pending_amount,
+  });
 });
 export default router;

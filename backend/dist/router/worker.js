@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = require("./../config");
 const client_1 = require("@prisma/client");
@@ -15,15 +18,30 @@ const express_1 = require("express");
 const middleware_1 = require("./middleware");
 const db_1 = require("../db");
 const types_1 = require("../types");
+const tweetnacl_1 = __importDefault(require("tweetnacl"));
+const web3_js_1 = require("@solana/web3.js");
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
 const jwt = require("jsonwebtoken");
 const TOTAL_SUBMISSIONS = 100;
 router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const walletaddressHardcoded = "0x8351B4feA34DB4A65B48f5a9bFFB26F8734a7bB3hckjacbkj";
+    const { publicKey, signature } = req.body;
+    const message = new TextEncoder().encode("Sign into LabelChain as a worker");
+    const signatureArray = new Uint8Array(signature);
+    if (signatureArray.length !== 64) {
+        return res.status(400).json({
+            message: "Signature must be 64 bytes long"
+        });
+    }
+    const result = tweetnacl_1.default.sign.detached.verify(message, signatureArray, new web3_js_1.PublicKey(publicKey).toBytes());
+    if (!result) {
+        return res.status(411).json({
+            message: "Incorrect signature"
+        });
+    }
     const existingWorker = yield prisma.workers.findFirst({
         where: {
-            address: walletaddressHardcoded,
+            address: publicKey,
         },
     });
     if (existingWorker) {
@@ -33,7 +51,7 @@ router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function*
     else {
         const worker = yield prisma.workers.create({
             data: {
-                address: walletaddressHardcoded,
+                address: publicKey,
                 pending_amount: 0,
                 locked_amount: 0,
             },
@@ -157,13 +175,13 @@ router.post("/payouts", middleware_1.authMiddlewareWorkers, (req, res) => __awai
                 user_id: Number(workerId),
                 amount: worker.pending_amount,
                 status: "Processing",
-                signature: txnId
-            }
+                signature: txnId,
+            },
         });
     }));
     return res.json({
         message: "processing amount",
-        amount: worker.pending_amount
+        amount: worker.pending_amount,
     });
 }));
 exports.default = router;
