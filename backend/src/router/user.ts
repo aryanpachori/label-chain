@@ -18,10 +18,8 @@ const s3client = new S3Client({
   },
   region: "ap-south-1",
 });
-const PARENT_WALLET = "5kNRojkY4NeM96KfLEktRczmSDRZdiPm6UQBJCepiK45";
-const connection = new Connection(
-  "https://solana-devnet.g.alchemy.com/v2/CFzatoOvzW6Cw31XUVFyyaowfvLLP4Au"
-);
+const PARENT_WALLET = "Gz1RNHAYRppRt2vL4NCS9w1t7A2Nq6ExNHDrypWEKVAY";
+const connection = new Connection(process.env.RPC_URL ?? "");
 router.post("/task", authMiddleware, async (req, res) => {
   // @ts-ignore
   const userId = req.userId;

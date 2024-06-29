@@ -8,8 +8,6 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { UnsafeBurnerWalletAdapter } from "@solana/wallet-adapter-wallets";
 import {
   WalletModalProvider,
-  WalletDisconnectButton,
-  WalletMultiButton,
 } from "@solana/wallet-adapter-react-ui";
 import { clusterApiUrl } from "@solana/web3.js";
 
@@ -24,7 +22,7 @@ export default function RootLayout({
   const network = WalletAdapterNetwork.Devnet;
 
   // You can also provide a custom RPC endpoint.
-  const endpoint = "https://solana-devnet.g.alchemy.com/v2/CFzatoOvzW6Cw31XUVFyyaowfvLLP4Au" 
+  const endpoint ="https://solana-devnet.g.alchemy.com/v2/Z5FHOkRdMOh6ZOWYAis8Zq_Sa0WkCiRa"
 
   const wallets = useMemo(
     () => [

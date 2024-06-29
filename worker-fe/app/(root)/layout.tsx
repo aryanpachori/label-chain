@@ -1,5 +1,5 @@
 "use client";
-import React, { FC, useMemo } from "react";
+import React, {  useMemo } from "react";
 import {
   ConnectionProvider,
   WalletProvider,
@@ -23,7 +23,7 @@ export default function RootLayout({
   const network = WalletAdapterNetwork.Devnet;
 
   // You can also provide a custom RPC endpoint.
-  const endpoint = "https://solana-devnet.g.alchemy.com/v2/CFzatoOvzW6Cw31XUVFyyaowfvLLP4Au" 
+  const endpoint = "https://solana-devnet.g.alchemy.com/v2/Z5FHOkRdMOh6ZOWYAis8Zq_Sa0WkCiRa"
 
   const wallets = useMemo(
     () => [

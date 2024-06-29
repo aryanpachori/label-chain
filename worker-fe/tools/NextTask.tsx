@@ -117,10 +117,7 @@ interface OptionProps {
   onSelect: () => void;
 }
 
-interface OptionProps {
-    imageUrl: string;
-    onSelect: () => void;
-  }
+
   
   function Option({ imageUrl, onSelect }: OptionProps) {
     return (

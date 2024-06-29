@@ -7,33 +7,37 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import Image from "next/image";
 import { BACKEND_URL } from "@/utils";
 import axios from "axios";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 export default function Appbar() {
   const { publicKey, signMessage } = useWallet();
+  const [balance, setBalance] = useState(0);
+  async function signAndSend() {
+    if (!publicKey) {
+      return;
+    }
+    const message = new TextEncoder().encode(
+      "Sign into LabelChain as a worker"
+    );
 
-async function signAndSend() {
-  if (!publicKey) {
-    return;
+    const signature = await signMessage?.(message);
+    if (!signature) {
+      console.error("Failed to obtain a valid signature.");
+      return;
+    }
+    console.log("Signature:", signature);
+    const response = await axios.post(`${BACKEND_URL}/v1/workers/signin`, {
+      signature: Array.from(signature),
+      publicKey: publicKey?.toString(),
+    });
+    setBalance(response.data.amount / 10000);
+    localStorage.setItem("token", response.data.token);
+    
   }
-  const message = new TextEncoder().encode("Sign into LabelChain as a worker");
- 
-  const signature = await signMessage?.(message);
-  if (!signature) {
-    console.error("Failed to obtain a valid signature.");
-    return;
-  }
-  console.log("Signature:", signature); 
-  const response = await axios.post(`${BACKEND_URL}/v1/workers/signin`, {
-    signature: Array.from(signature), 
-    publicKey: publicKey?.toString(),
-  });
-  localStorage.setItem("token", response.data.token);
-}
 
-useEffect(() => {
-  signAndSend();
-}, [publicKey]);
-
+  useEffect(() => {
+    signAndSend();
+  }, [publicKey]);
 
   return (
     <div>
@@ -50,7 +54,26 @@ useEffect(() => {
             LabelChain(Workers)
           </span>
         </div>
-        <div>
+        <div className="flex">
+          <Button
+            onClick={() => {
+              axios.post(
+                `${BACKEND_URL}/v1/workers/payouts`,
+                {},
+                {
+                  headers: {
+                    Authorization: localStorage.getItem("token"),
+                  },
+                }
+              );
+            }}
+            className="px-4 py-6 text-md mr-2 rounded-md font-sans bg-slate-900 text-white hover:bg-slate-950 font-bold"
+          >
+            Payout :
+            <span className=" ml-2 bg-gradient-to-r from-[#9945FF] to-[#14F195] text-transparent bg-clip-text">
+              ({balance}) SOL
+            </span>
+          </Button>
           {publicKey ? <WalletDisconnectButton /> : <WalletMultiButton />}
         </div>
       </header>

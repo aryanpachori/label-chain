@@ -23,7 +23,7 @@ export default function UploadImage() {
       const transaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey : publicKey!,
-          toPubkey  :new PublicKey("5kNRojkY4NeM96KfLEktRczmSDRZdiPm6UQBJCepiK45"),
+          toPubkey  :new PublicKey("Gz1RNHAYRppRt2vL4NCS9w1t7A2Nq6ExNHDrypWEKVAY"),
           lamports : 100000000,
         })
       )

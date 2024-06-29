@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a, _b;
+var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
@@ -34,9 +34,9 @@ const s3client = new client_s3_1.S3Client({
     region: "ap-south-1",
 });
 const PARENT_WALLET = "5kNRojkY4NeM96KfLEktRczmSDRZdiPm6UQBJCepiK45";
-const connection = new web3_js_1.Connection("https://solana-devnet.g.alchemy.com/v2/CFzatoOvzW6Cw31XUVFyyaowfvLLP4Au");
+const connection = new web3_js_1.Connection((_c = process.env.RPC_URL) !== null && _c !== void 0 ? _c : "");
 router.post("/task", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _c, _d;
+    var _d, _e;
     // @ts-ignore
     const userId = req.userId;
     const body = req.body;
@@ -53,28 +53,28 @@ router.post("/task", middleware_1.authMiddleware, (req, res) => __awaiter(void 0
         maxSupportedTransactionVersion: 1
     });
     console.log(transaction);
-    if (((_c = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(1)) === null || _c === void 0 ? void 0 : _c.toString()) !== PARENT_WALLET) {
+    if (((_d = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(1)) === null || _d === void 0 ? void 0 : _d.toString()) !== PARENT_WALLET) {
         return res.status(411).json({
             message: "Transaction sent to wrong address"
         });
     }
-    if (((_d = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(0)) === null || _d === void 0 ? void 0 : _d.toString()) !== (user === null || user === void 0 ? void 0 : user.address)) {
+    if (((_e = transaction === null || transaction === void 0 ? void 0 : transaction.transaction.message.getAccountKeys().get(0)) === null || _e === void 0 ? void 0 : _e.toString()) !== (user === null || user === void 0 ? void 0 : user.address)) {
         return res.status(411).json({
             message: "Transaction sent to wrong address"
         });
     }
     let response = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-        var _e, _f;
+        var _f, _g;
         const response = yield tx.task.create({
             data: {
-                title: (_e = parsedData.data.title) !== null && _e !== void 0 ? _e : DEFAULT_TITLE,
+                title: (_f = parsedData.data.title) !== null && _f !== void 0 ? _f : DEFAULT_TITLE,
                 amount: 0.1 * config_1.DECIMALS,
                 signature: parsedData.data.signature,
                 user_id: userId,
             },
         });
         yield tx.option.createMany({
-            data: (_f = parsedData.data) === null || _f === void 0 ? void 0 : _f.options.map((x) => ({
+            data: (_g = parsedData.data) === null || _g === void 0 ? void 0 : _g.options.map((x) => ({
                 image_url: x.imageUrl,
                 task_id: response.id,
             })),
