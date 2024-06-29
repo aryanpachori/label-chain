@@ -33,7 +33,7 @@ const s3client = new client_s3_1.S3Client({
     },
     region: "ap-south-1",
 });
-const PARENT_WALLET = "5kNRojkY4NeM96KfLEktRczmSDRZdiPm6UQBJCepiK45";
+const PARENT_WALLET = "Gz1RNHAYRppRt2vL4NCS9w1t7A2Nq6ExNHDrypWEKVAY";
 const connection = new web3_js_1.Connection((_c = process.env.RPC_URL) !== null && _c !== void 0 ? _c : "");
 router.post("/task", middleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _d, _e;

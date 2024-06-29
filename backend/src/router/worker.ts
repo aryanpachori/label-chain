@@ -14,7 +14,7 @@ import {
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
-import { privateKey } from "../privateKey";
+
 
 const router = Router();
 const prisma = new PrismaClient();
