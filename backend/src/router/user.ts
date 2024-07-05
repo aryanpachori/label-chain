@@ -1,3 +1,4 @@
+require('dotenv').config();
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { DECIMALS, JWT_SECRET } from "../config";

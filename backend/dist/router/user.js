@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 var _a, _b, _c;
 Object.defineProperty(exports, "__esModule", { value: true });
+require('dotenv').config();
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
 const config_1 = require("../config");

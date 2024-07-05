@@ -1,3 +1,4 @@
+require('dotenv').config();
 import { JWT_SECRET_WORKER } from "./../config";
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
