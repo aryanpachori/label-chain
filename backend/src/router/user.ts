@@ -1,13 +1,14 @@
 require('dotenv').config();
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
-import { DECIMALS, JWT_SECRET } from "../config";
+import { DECIMALS } from "../config";
 import { authMiddleware } from "./middleware";
 import { S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { taskInput } from "../types";
 import { Connection, PublicKey } from "@solana/web3.js";
 import nacl from "tweetnacl";
+const JWT_SECRET = process.env.JWT_SECRET || "";
 const router = Router();
 const jwt = require("jsonwebtoken");
 const DEFAULT_TITLE = "Choose the most appropriate thumbnail";

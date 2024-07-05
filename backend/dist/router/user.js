@@ -23,6 +23,7 @@ const s3_presigned_post_1 = require("@aws-sdk/s3-presigned-post");
 const types_1 = require("../types");
 const web3_js_1 = require("@solana/web3.js");
 const tweetnacl_1 = __importDefault(require("tweetnacl"));
+const JWT_SECRET = process.env.JWT_SECRET || "";
 const router = (0, express_1.Router)();
 const jwt = require("jsonwebtoken");
 const DEFAULT_TITLE = "Choose the most appropriate thumbnail";
@@ -167,7 +168,7 @@ router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function*
     if (existingUser) {
         const token = jwt.sign({
             userId: existingUser.id,
-        }, config_1.JWT_SECRET);
+        }, JWT_SECRET);
         res.json({
             token,
         });
@@ -180,7 +181,7 @@ router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function*
         });
         const token = jwt.sign({
             userId: user.id,
-            JWT_SECRET: config_1.JWT_SECRET,
+            JWT_SECRET,
         });
         return res.json({
             token,

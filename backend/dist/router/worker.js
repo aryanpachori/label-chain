@@ -14,7 +14,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
-const config_1 = require("./../config");
 const client_1 = require("@prisma/client");
 const express_1 = require("express");
 const middleware_1 = require("./middleware");
@@ -23,6 +22,7 @@ const types_1 = require("../types");
 const tweetnacl_1 = __importDefault(require("tweetnacl"));
 const bs58_1 = __importDefault(require("bs58"));
 const web3_js_1 = require("@solana/web3.js");
+const JWT_SECRET_WORKER = process.env.JWT_SECRET_WORKER || "";
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
 const jwt = require("jsonwebtoken");
@@ -49,7 +49,7 @@ router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function*
         },
     });
     if (existingWorker) {
-        const token = jwt.sign({ workerId: existingWorker.id }, config_1.JWT_SECRET_WORKER);
+        const token = jwt.sign({ workerId: existingWorker.id }, JWT_SECRET_WORKER);
         return res.json({ token, amount: existingWorker.pending_amount });
     }
     else {
@@ -60,7 +60,7 @@ router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function*
                 locked_amount: 0,
             },
         });
-        const token = jwt.sign({ workerId: worker.id }, config_1.JWT_SECRET_WORKER);
+        const token = jwt.sign({ workerId: worker.id }, JWT_SECRET_WORKER);
         return res.json({ token, amount: 0 });
     }
 }));

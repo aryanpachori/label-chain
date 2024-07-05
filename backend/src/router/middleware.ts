@@ -1,7 +1,8 @@
+require('dotenv').config();
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { JWT_SECRET, JWT_SECRET_WORKER } from "../config";
-
+const JWT_SECRET = process.env.JWT_SECRET || "";
+const JWT_SECRET_WORKER = process.env.JWT_SECRET_WORKER || "";
 export const authMiddleware = (
   req: Request,
   res: Response,

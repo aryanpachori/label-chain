@@ -1,5 +1,4 @@
 require('dotenv').config();
-import { JWT_SECRET_WORKER } from "./../config";
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { authMiddlewareWorkers } from "./middleware";
@@ -16,7 +15,7 @@ import {
   Transaction,
 } from "@solana/web3.js";
 
-
+const JWT_SECRET_WORKER = process.env.JWT_SECRET_WORKER || "";
 const router = Router();
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
