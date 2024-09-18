@@ -11,7 +11,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 require('dotenv').config();
 const client_1 = require("@prisma/client");
@@ -27,7 +26,7 @@ const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
 const jwt = require("jsonwebtoken");
 const TOTAL_SUBMISSIONS = 100;
-const connection = new web3_js_1.Connection((_a = process.env.RPC_URL) !== null && _a !== void 0 ? _a : "");
+const connection = new web3_js_1.Connection(process.env.RPC_URL || (0, web3_js_1.clusterApiUrl)('devnet'));
 router.post("/signin", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { publicKey, signature } = req.body;
     const message = new TextEncoder().encode("Sign into LabelChain as a worker");
@@ -91,7 +90,7 @@ router.post("/submission", middleware_1.authMiddlewareWorkers, (req, res) => __a
         }
         const amount = (Number(task.amount) / TOTAL_SUBMISSIONS).toString();
         const submission = yield prisma.$transaction((tx) => __awaiter(void 0, void 0, void 0, function* () {
-            var _b, _c, _d;
+            var _a, _b, _c;
             const submission = yield tx.submission.upsert({
                 where: {
                     worker_id_task_id: {
@@ -100,13 +99,13 @@ router.post("/submission", middleware_1.authMiddlewareWorkers, (req, res) => __a
                     },
                 },
                 update: {
-                    option_id: Number((_b = parsedData.data) === null || _b === void 0 ? void 0 : _b.OptionId),
+                    option_id: Number((_a = parsedData.data) === null || _a === void 0 ? void 0 : _a.OptionId),
                     amount: Number(amount),
                 },
                 create: {
-                    option_id: Number((_c = parsedData.data) === null || _c === void 0 ? void 0 : _c.OptionId),
+                    option_id: Number((_b = parsedData.data) === null || _b === void 0 ? void 0 : _b.OptionId),
                     worker_id: workerId,
-                    task_id: Number((_d = parsedData.data) === null || _d === void 0 ? void 0 : _d.taskId),
+                    task_id: Number((_c = parsedData.data) === null || _c === void 0 ? void 0 : _c.taskId),
                     amount: Number(amount),
                 },
             });
@@ -164,7 +163,7 @@ router.post("/payouts", middleware_1.authMiddlewareWorkers, (req, res) => __awai
             toPubkey: new web3_js_1.PublicKey(worker.address),
             lamports: (1000000000 * worker.pending_amount) / 1000,
         }));
-        const secretKeyUint8Array = bs58_1.default.decode(process.env.PRIVATE_KEY || "");
+        const secretKeyUint8Array = bs58_1.default.decode(process.env.PRIVATE_KEY);
         const keypair = web3_js_1.Keypair.fromSecretKey(secretKeyUint8Array);
         let signature = yield (0, web3_js_1.sendAndConfirmTransaction)(connection, transaction, [
             keypair,

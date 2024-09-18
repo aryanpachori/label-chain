@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 import {
   WalletDisconnectButton,
@@ -56,7 +57,9 @@ export default function Appbar() {
           LabelChain helps you label data quickly and accurately. Our
           easy-to-use platform makes data preparation effortless, saving you
           time and improving your results. Get started with LabelChain for
-          better data labeling today.
+          better data labeling today.If you're a worker redirect to  <a className="text-slate-300 underline" href="https://label-chain-worker-7ybx9kq3x-aryan-pachoris-projects.vercel.app/">
+            labelchain for workers!
+          </a>
         </p>
       </div>
     </div>

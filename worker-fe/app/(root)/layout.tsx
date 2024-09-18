@@ -23,7 +23,7 @@ export default function RootLayout({
   const network = WalletAdapterNetwork.Devnet;
 
   // You can also provide a custom RPC endpoint.
-  const endpoint = "https://solana-devnet.g.alchemy.com/v2/Z5FHOkRdMOh6ZOWYAis8Zq_Sa0WkCiRa"
+  const endpoint = "https://solana-devnet.g.alchemy.com/v2/qlsrTkNGjnuK46GWAC2AVAaVnVZ2ylVf"
 
   const wallets = useMemo(
     () => [

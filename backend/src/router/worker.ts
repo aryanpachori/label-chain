@@ -7,6 +7,7 @@ import { submissionInput } from "../types";
 import nacl from "tweetnacl";
 import bs58 from "bs58";
 import {
+  clusterApiUrl,
   Connection,
   Keypair,
   PublicKey,
@@ -20,7 +21,7 @@ const router = Router();
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const TOTAL_SUBMISSIONS = 100;
-const connection = new Connection(process.env.RPC_URL ?? "");
+const connection = new Connection(process.env.RPC_URL||clusterApiUrl('devnet'));
 
 router.post("/signin", async (req, res) => {
   const { publicKey, signature } = req.body;
@@ -178,7 +179,7 @@ router.post("/payouts", authMiddlewareWorkers, async (req, res) => {
       })
     );
 
-    const secretKeyUint8Array = bs58.decode(process.env.PRIVATE_KEY||"");
+    const secretKeyUint8Array = bs58.decode(process.env.PRIVATE_KEY!);
     const keypair = Keypair.fromSecretKey(secretKeyUint8Array);
 
     let signature = await sendAndConfirmTransaction(connection, transaction, [

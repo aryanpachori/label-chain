@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-key */
 "use client";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,40 +7,56 @@ import { Upload } from "./Upload";
 import { BACKEND_URL } from "@/utils";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
-import { useWallet, useConnection } from '@solana/wallet-adapter-react';
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 
 export default function UploadImage() {
   const [title, setTitle] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [txSignature, setTxSignature] = useState<string | null>(null);
   const router = useRouter();
   const { publicKey, sendTransaction } = useWallet();
-  const [txSignature, setTxSignature] = useState("");
-  const {connection} = useConnection();
+  const { connection } = useConnection();
 
   async function makePayment() {
+    try {
       const transaction = new Transaction().add(
         SystemProgram.transfer({
-          fromPubkey : publicKey!,
-          toPubkey  :new PublicKey("Gz1RNHAYRppRt2vL4NCS9w1t7A2Nq6ExNHDrypWEKVAY"),
-          lamports : 100000000,
+          fromPubkey: publicKey!,
+          toPubkey: new PublicKey(
+            "Gz1RNHAYRppRt2vL4NCS9w1t7A2Nq6ExNHDrypWEKVAY"
+          ),
+          lamports: 100000000,
         })
-      )
-      const {
-        context: { slot: minContextSlot },
-        value: { blockhash, lastValidBlockHeight }
-    } = await connection.getLatestBlockhashAndContext();
+      );
 
-    const signature = await sendTransaction(transaction, connection, { minContextSlot });
+      const signature = await sendTransaction(transaction, connection);
+      setTxSignature(signature);
+      console.log(`Transaction sent, signature: ${signature}`);
+      // @ts-ignore
 
-    await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
-    setTxSignature(signature);
+      await connection.confirmTransaction({
+        signature,
+        commitment: "confirmed",
+      });
+      console.log(`Transaction confirmed: ${signature}`);
+    } catch (error) {
+      console.error("Error during transaction:", error);
+    }
   }
 
-  async function onSubmit(event: any) {
-    event.preventDefault();
-
+  async function onSubmit() {
     try {
+      if (!txSignature) {
+        console.warn("No transaction signature found. Cannot submit task.");
+        return;
+      }
+
       const response = await axios.post(
         `${BACKEND_URL}/v1/user/task`,
         {
@@ -53,19 +68,13 @@ export default function UploadImage() {
         },
         {
           headers: {
-            Authorization: localStorage.getItem("token"),
+            Authorization: localStorage.getItem("token")!,
           },
         }
       );
 
-      console.log("Response:", response);
-
-      // Ensure response.data.id is a valid task ID
-      if (response.data.id) {
-        router.push(`/task/${response.data.id}`);
-      } else {
-        console.error("No task ID in response:", response.data);
-      }
+      console.log("Task created successfully:", response.data);
+      router.push(`/task/${response.data.id}`);
     } catch (error) {
       console.error("Error submitting task:", error);
     }
@@ -134,4 +143,3 @@ export default function UploadImage() {
     </div>
   );
 }
-
